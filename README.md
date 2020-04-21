@@ -14,5 +14,5 @@ CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from pars
 ```
 ## Compute NLI-ACC score
 ```
-CUDA_VISIBLE_DEVICES=0 python gnn.py --model bert-base-multilingual-uncased --do_verify --no_numeric --encoding gnn --load_from models/gnn_fp16_no_numeric/model_ep4.pt --fp16 --verify_file outputs/[Your_File] --verify_linking verification/test_lm.json
+CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do_verify --encoding gnn --load_from NLI_models/model_ep4.pt --fp16 --verify_file outputs/[Your_File] --verify_linking data/test_lm.json
 ```
