@@ -2,6 +2,11 @@
 The data and code for ACL2020 paper "Logical Natural Language Generation from Open-Domain Tables"
 
 
+## Download the NLI scorer
+```
+wget https://logicnlg.s3-us-west-2.amazonaws.com/NLI_models.zip
+unzip NLI_models.zip
+```
 
 ## Compute SP-ACC score
 ```
