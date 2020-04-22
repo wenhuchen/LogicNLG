@@ -14,6 +14,18 @@ wget
 ```
 
 ## Evaluation Command
+### Compute BLEU-1/2/3 score
+```
+python GPT2.py --do_test --load_from models/[Your_Model] --model gpt2
+python GPT2-coarse-to-fine.py --do_test --load_from models/[Your_Model] --model gpt2
+```
+
+### Compute Adv-ACC score
+```
+python GPT2.py --do_verify --load_from models/[Your_Model] --model gpt2
+python GPT2-coarse-to-fine.py --do_verify --load_from models/[Your_Model] --model gpt2 --stage 2
+```
+
 ### Compute SP-ACC score
 ```
 CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/parser_step49161_acc0.58.pt --score_file outputs/[Your_File]
