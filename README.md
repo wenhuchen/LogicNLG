@@ -5,6 +5,8 @@ The data and code for ACL2020 paper [Logical Natural Language Generation from Op
 <img src="examples.png" width="400">
 </p>
 
+## Data
+The data used for LogicNLG is provided in [data]()
 
 ## Preparation
 ### Download the NLI scorer
@@ -32,15 +34,15 @@ python GPT2-coarse-to-fine.py --do_verify --load_from models/[Your_Model] --mode
 ```
 
 ### Compute SP-ACC score
+1. Parsing your output file into programs:
 ```
-CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/parser_step49161_acc0.58.pt --score_file outputs/[Your_File]
+python parse_programs.py --parse --score_file outputs/[Your_File]
+```
+2. Run the ranker model to predict the entailment relationship:
+```
+CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/parser_step49161_acc0.58.pt --score_file program_outputs/[Your_File]
 ```
 ### Compute NLI-ACC score
 ```
 CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do_verify --encoding gnn --load_from NLI_models/model_ep4.pt --fp16 --verify_file outputs/[Your_File] --verify_linking data/test_lm.json
-```
-
-## Parsing Command
-```
-python parse_programs.py --parse --score_file outputs/[Your_File]
 ```
