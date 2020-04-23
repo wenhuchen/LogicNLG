@@ -9,12 +9,17 @@ The data and code for ACL2020 paper [Logical Natural Language Generation from Op
 The data used for LogicNLG is provided in [data](https://github.com/wenhuchen/LogicNLG/blob/master/data) folder, the details are described in [README](https://github.com/wenhuchen/LogicNLG/blob/master/data/README.md)
 
 ## Preparation
+### Unzip all the table files
+```
+unzip all_csv.zip
+```
+
 ### Download the NLI scorer
 ```
 wget https://logicnlg.s3-us-west-2.amazonaws.com/NLI_models.zip
 unzip NLI_models.zip
-unzip all_csv.zip
 ```
+
 ### Download the Semantic Parser
 ```
 wget https://logicnlg.s3-us-west-2.amazonaws.com/parser_models.zip
