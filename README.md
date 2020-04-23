@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do
 ```
 ### You can verify their SP-Acc by:
 ```
-CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/parser_step49161_acc0.58.pt --score_file program_outputs/GPT_gpt2_C2F_13.35.json
+CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/GPT_gpt2_C2F_13.35.json
 ```
 
 
@@ -64,5 +64,5 @@ python parse_programs.py --parse --score_file outputs/[Your_File]
 ```
 2. Run the ranker model to predict the entailment relationship:
 ```
-CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/parser_step49161_acc0.58.pt --score_file program_outputs/[Your_File]
+CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/[Your_File]
 ```
