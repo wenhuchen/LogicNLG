@@ -14,7 +14,8 @@ unzip NLI_models.zip
 ```
 ### Download the Semantic Parser
 ```
-wget 
+wget https://logicnlg.s3-us-west-2.amazonaws.com/parser_models.zip
+unzip parser_models.zip
 ```
 
 ## Evaluation Command
