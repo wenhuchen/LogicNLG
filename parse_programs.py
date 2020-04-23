@@ -28,40 +28,6 @@ from APIs import all_funcs
 device = torch.device('cuda')
 MODEL_CLASSES = {"bert": (BertConfig, BertModel, BertTokenizer)}
 
-class ParseDataset(Dataset):
-    def __init__(self, bootstrap_data, weakly_data, vocab_file):
-        self.bootstrap_data = bootstrap_data
-        self.weakly_data = weakly_data
-        self.vocab = vocab_file
-
-        self.sent_max_len = 40
-        self.prog_max_len = 60
-
-    def __getitem__(self, index):
-        if random.random() < 0.2:
-            entry = random.choice(self.bootstrap_data)
-        else:
-            entry = random.choice(self.weakly_data)
-
-        sent = entry[0]
-        prog = entry[1]
-        label = entry[2]
-
-        # for s in sent:
-        sentence = [self.vocab['[SOS]']] + [self.vocab.get(_, self.vocab['[UNK]']) for _ in sent]
-        programs = [self.vocab.get(_, self.vocab['[UNK]']) for _ in prog]
-
-        sentence = sentence[:self.sent_max_len] + [self.vocab['[PAD]']] * max(self.sent_max_len - len(sentence), 0)
-        programs = programs[:self.prog_max_len] + [self.vocab['[PAD]']] * max(self.prog_max_len - len(programs), 0)
-
-        sentence = np.array(sentence, 'int64')
-        programs = np.array(programs, 'int64')
-
-        return sentence, programs, label
-
-    def __len__(self):
-        return len(self.bootstrap_data) + len(self.weakly_data)
-
 class ParseNLIDataset(Dataset):
     def __init__(self, bootstrap_data, weakly_data, tokenizer):
         self.bootstrap_data = bootstrap_data
@@ -209,7 +175,7 @@ def evaluate(tokenizer, model, parser):
                 fn += 1
             else:
                 tn += 1
-            #sys.stdout.write("finished {}/{}; success = {}, fail = {} \r".format(count, len(data), succ, fail))
+
             sys.stdout.write("TP={},TN={},FP={},FN={},ACC={} \r".format(tp, tn, fp, fn, (tp + tn)/(tp + tn + fp + fn)))
 
     accuracy = (tp + tn)/(tp + tn + fp + fn)
@@ -490,14 +456,6 @@ if __name__ == '__main__':
         
         tb_writer.close()
 
-    if args.evaluate:
-        parser = Parser(args.csv_path)
-        tokenizer, model = get_model(args.model_type, args.model_name_or_path, args.cache_dir)
-        model.to(device)
-        model.eval()
-        print("loading trained model from {}".format(args.load_from))
-        evaluate(tokenizer, model, parser)
-
     if args.parse:
         with open(args.score_file, 'r') as f:
             data = json.load(f)
@@ -525,22 +483,7 @@ if __name__ == '__main__':
         model.to(device)
         model.eval()
         model.load_state_dict(torch.load(args.load_from))
-        """
-        parser = Parser(args.csv_path)
-        table_names = []
-        sents = []
-        for k, vs in data.items():
-            for v in vs:
-                table_names.append(k)
-                sents.append(v)
-        
-        cores = multiprocessing.cpu_count()
-        print("Using {} cores to run on {} instances".format(cores, len(sents)))
-        pool = Pool(cores)
-        results = pool.map(parser.distribute_parse, zip(table_names, sents))
-        pool.close()
-        pool.join()
-        """
+
         with open(args.score_file, 'r') as f:
             results = json.load(f)
 
