@@ -339,8 +339,9 @@ class GPTTableCoarseFineDatabase(Dataloader):
 class GPTTableCoarseFineDatabase2(Dataloader):
     def __init__(self, train_name, val_name, test_name, tokenizer, batch_size=5, max_len=800, stage=1, total_stage=2):
         super(GPTTableCoarseFineDatabase2, self).__init__(None, val_name, test_name)
-        with open(train_name, 'r') as f:
-            self.train = json.load(f)
+        if train_name:
+            with open(train_name, 'r') as f:
+                self.train = json.load(f)
         
         self.tokenizer = tokenizer
         self.stage = stage

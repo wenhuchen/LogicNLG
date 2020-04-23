@@ -80,9 +80,6 @@ if __name__ == '__main__':
     if args.model == 'gpt2-medium':
         args.batch_size = 2
 
-    if args.do_rl:
-        args.batch_size = 1
-
     print(args)
 
     tokenizer = GPT2Tokenizer.from_pretrained(args.model)
@@ -239,7 +236,7 @@ if __name__ == '__main__':
         correct, total = 0, 0
         with torch.no_grad():
             for idx in range(0, dataset.test_len()):
-                batch_pos, batch_neg = dataset.get_pair_data(idx, 'test', mask_type='single')
+                batch_pos, batch_neg = dataset.get_pair_data(idx, 'test', mask_type='both')
 
                 batch = tuple(Variable(t).to(device) for t in batch_pos)
                 trg_inp, trg_out, mask, caption = batch
