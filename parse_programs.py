@@ -5,7 +5,7 @@ import argparse
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import numpy as np
-from Model import Ranker, BERTRanker
+from Model import BERTRanker
 import torch
 import torch.nn.functional as F
 from torch import nn
