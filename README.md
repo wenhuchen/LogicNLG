@@ -8,6 +8,16 @@ The data and code for ACL2020 paper [Logical Natural Language Generation from Op
 ## Data
 The data used for LogicNLG is provided in [data](https://github.com/wenhuchen/LogicNLG/blob/master/data) folder, the details are described in [README](https://github.com/wenhuchen/LogicNLG/blob/master/data/README.md)
 
+## Reproducing Reported Results
+The generated output from Field-Infusing-Transformer,GPT-2-based, Coarse-to-Fine models are stored in [outputs](https://github.com/wenhuchen/LogicNLG/blob/master/outputs). Their corresponding parsing results are stored in [program_outputs](https://github.com/wenhuchen/LogicNLG/blob/master/program_outputs). 
+
+### You can verify their BLEU score by: 
+```
+python evaluate.py outputs/field_infusing.json data/test_lm.json
+python evaluate.py outputs/GPT_gpt2_12.65.json data/test_lm.json
+python evaluate.py outputs/GPT_gpt2_C2F_13.35.json data/test_lm.json
+```
+
 ## Preparation
 ### Download the NLI scorer
 ```
