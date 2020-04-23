@@ -13,6 +13,7 @@ The data used for LogicNLG is provided in [data](https://github.com/wenhuchen/Lo
 ```
 wget https://logicnlg.s3-us-west-2.amazonaws.com/NLI_models.zip
 unzip NLI_models.zip
+unzip all_csv.zip
 ```
 ### Download the Semantic Parser
 ```
