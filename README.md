@@ -1,5 +1,7 @@
 # LogicNLG
-The data and code for ACL2020 paper "Logical Natural Language Generation from Open-Domain Tables"
+The data and code for ACL2020 paper [Logical Natural Language Generation from Open-Domain Tables](https://arxiv.org/abs/2004.10404), which aims to study the problem of natural language generation with logical inference in the intermediate steps. Going beyond simply surface-level copying, LogicNLG requires the model to deeply understand the content in the table and infer information implicitly expressed by the table.
+
+
 
 
 ## Preparation
