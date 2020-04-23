@@ -6,7 +6,7 @@ The data and code for ACL2020 paper [Logical Natural Language Generation from Op
 </p>
 
 ## Data
-The data used for LogicNLG is provided in [data]()
+The data used for LogicNLG is provided in data/ folder, the details are described in [data](https://github.com/wenhuchen/LogicNLG/blob/master/data/README.md)
 
 ## Preparation
 ### Download the NLI scorer
