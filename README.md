@@ -56,11 +56,11 @@ CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_train --model gpt2
 ### Train GPT2-Coarse-to-Fine Model
 1. Warm-up the template generation model for 10 epochs
 ```
-CUDA_VISIBLE_DEVICES=0 python coarse-to-fine.py --do_train --model gpt2 --stage 1
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_train --model gpt2 --stage 1
 ```
 2. Load the last model and then train the fine-grained surface realization model for 15 epochs and smaller batch size.
 ```
-CUDA_VISIBLE_DEVICES=0 python coarse-to-fine.py --do_train --model gpt2 --stage 2 --epochs 15 --batch_size 3 --load_from models/GPT_stage1_C2F_ep9.pt
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_train --model gpt2 --stage 2 --epochs 15 --batch_size 3 --load_from models/GPT_stage1_C2F_ep9.pt
 ```
 
 ## Evaluation Command
