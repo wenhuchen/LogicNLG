@@ -125,3 +125,6 @@ python parse_programs.py --parse --score_file outputs/[Your_File]
 ```
 CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/[Your_File]
 ```
+
+## Miscellaneous
+If you find any problem about the code, please leave an issue or shoot me an email.
