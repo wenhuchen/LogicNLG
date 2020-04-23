@@ -5,16 +5,21 @@ The data and code for ACL2020 paper [Logical Natural Language Generation from Op
 <img src="examples.png" width="400">
 </p>
 
-## Data
+## Training/Evaluation Data
 The data used for LogicNLG is provided in [data](https://github.com/wenhuchen/LogicNLG/blob/master/data) folder, the details are described in [README](https://github.com/wenhuchen/LogicNLG/blob/master/data/README.md)
 
 ## Preparation
+### Unzip all the table files
+```
+unzip all_csv.zip
+```
+
 ### Download the NLI scorer
 ```
 wget https://logicnlg.s3-us-west-2.amazonaws.com/NLI_models.zip
 unzip NLI_models.zip
-unzip all_csv.zip
 ```
+
 ### Download the Semantic Parser
 ```
 wget https://logicnlg.s3-us-west-2.amazonaws.com/parser_models.zip
@@ -39,26 +44,45 @@ CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do
 CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/GPT_gpt2_C2F_13.35.json
 ```
 
+## Retrain Your Own Model
+### Train Field-Infusing Transformer
+```
+CUDA_VISIBLE_DEVICES=0 python Transformer.py --do_train
+```
+### Train GPT2-small Model
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_train --model gpt2
+```
+### Train GPT2-Coarse-to-Fine Model
+1. Warm-up the template generation model for 10 epochs
+```
+CUDA_VISIBLE_DEVICES=0 python coarse-to-fine.py --do_train --model gpt2 --stage 1
+```
+2. Load the last model and then train the fine-grained surface realization model for 15 epochs and smaller batch size.
+```
+CUDA_VISIBLE_DEVICES=0 python coarse-to-fine.py --do_train --model gpt2 --stage 2 --epochs 15 --batch_size 3 --load_from models/GPT_stage1_C2F_ep9.pt
+```
 
 ## Evaluation Command
-### Compute BLEU-1/2/3 score
-```
-python GPT2.py --do_test --load_from models/[Your_Model] --model gpt2
-python GPT2-coarse-to-fine.py --do_test --load_from models/[Your_Model] --model gpt2
-```
-
 ### Compute Adv-ACC score
 ```
 python GPT2.py --do_verify --load_from models/[Your_Model] --model gpt2
 python GPT2-coarse-to-fine.py --do_verify --load_from models/[Your_Model] --model gpt2 --stage 2
 ```
 
-### Compute NLI-ACC score
+### Compute BLEU-1/2/3 score
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_test --load_from models/[Your_Model] --model gpt2
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_test --load_from models/[Your_Model] --model gpt2
+```
+After running do_test command, the decoded results on test split will be saved into outputs/ folder, which is required for the following NLI-Acc and SP-Acc score computation.
+
+### Compute NLI-Acc score
 ```
 CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do_verify --encoding gnn --load_from NLI_models/model_ep4.pt --fp16 --verify_file outputs/[Your_File] --verify_linking data/test_lm.json
 ```
 
-### Compute SP-ACC score
+### Compute SP-Acc score
 1. Parsing your output file into programs:
 ```
 python parse_programs.py --parse --score_file outputs/[Your_File]
