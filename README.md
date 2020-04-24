@@ -5,6 +5,9 @@ The data and code for ACL2020 paper [Logical Natural Language Generation from Op
 <img src="examples.png" width="400">
 </p>
 
+## Demo
+You can explore the [visualization interface](https://wenhuchen.github.io/logicnlg.github.io/) to see the generation results of different models on LogNLG. Have fun!
+
 ## Requirements
 - pytorch 1.4.0
 - huggingface transformers 2.5.1
