@@ -130,7 +130,12 @@ CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from pars
 ```
 
 ## Codalab
-We host challenge of LogicNLG in [CodaLab](https://competitions.codalab.org/competitions/24527). Please consider submit your results to the challenge site. Please remember to zip your files before submission
+We host challenge of LogicNLG in [CodaLab](https://competitions.codalab.org/competitions/24527). Please consider submit your results to the challenge site. 
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_verify_challenge --load_from models/GPT_stage2_C2F_ep13.pt --stage 2
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_test_challenge --load_from models/GPT_stage2_C2F_ep13.pt --model gpt2
+```
+These two commands will output results "verify_results.json" and "test_results.json" in the challenge folder, please remember to zip your files before submission.
 ```
 cd challenge
 zip -r results.zip verify_results.json test_results.json
