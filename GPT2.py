@@ -290,7 +290,7 @@ if __name__ == '__main__':
                 sys.stdout.write("finished {}/{}; speed={}s/sent \r".format(idx, 
                                  dataset.test_len(), (time.time() - start_time) / len(results)))
         
-        with open('challenge/GPT_{}.json'.format(args.model), 'w') as f:
+        with open('challenge/test_results.json', 'w') as f:
             json.dump(results, f, indent=2)        
 
     if args.do_verify:
@@ -381,7 +381,7 @@ if __name__ == '__main__':
 
                 sys.stdout.write('finished {}/{}\r'.format(idx, dataset.test_len()))
         
-        with open('challenge/verify_GPT_{}.json'.format(args.model), 'w') as f:
+        with open('challenge/verify_results.json', 'w') as f:
             json.dump(results, f, indent=2)
 
     if args.do_rl:
