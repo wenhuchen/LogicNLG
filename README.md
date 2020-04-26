@@ -5,6 +5,16 @@ The data and code for ACL2020 paper [Logical Natural Language Generation from Op
 <img src="examples.png" width="400">
 </p>
 
+## Demo
+You can explore the [visualization interface](https://wenhuchen.github.io/logicnlg.github.io/) to see the generation results of different models on LogNLG. Have fun!
+
+## Requirements
+- pytorch 1.4.0
+- huggingface transformers 2.5.1
+- tensorboardX
+- tqdm
+- apex [optional]
+
 ## Training/Evaluation Data
 The data used for LogicNLG is provided in [data](https://github.com/wenhuchen/LogicNLG/blob/master/data) folder, the details are described in [README](https://github.com/wenhuchen/LogicNLG/blob/master/data/README.md)
 
@@ -26,7 +36,7 @@ wget https://logicnlg.s3-us-west-2.amazonaws.com/parser_models.zip
 unzip parser_models.zip
 ```
 
-## Reproducing Reported Results
+## Reproducing Reported Results From Automatic Metric Models
 The generated output from Field-Infusing-Transformer,GPT-2-based, Coarse-to-Fine models are stored in [outputs](https://github.com/wenhuchen/LogicNLG/blob/master/outputs). Their corresponding parsing results are stored in [program_outputs](https://github.com/wenhuchen/LogicNLG/blob/master/program_outputs). 
 
 ### You can verify their BLEU score by: 
@@ -43,6 +53,32 @@ CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do
 ```
 CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/GPT_gpt2_C2F_13.35.json
 ```
+
+## Loading Our Trained Models
+You are download and reload our trained models from Amazon S3 and decode results from them.
+```
+wget https://logicnlg.s3-us-west-2.amazonaws.com/models.zip
+unzip models.zip
+```
+### For GPT-2.py model
+You can either decode the sentences 
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_test --load_from models/GPT_ep8.pt
+```
+or evaluate the Adv-Acc
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_verify --load_from models/GPT_ep8.pt
+```
+### For Coarse-to-Fine model
+You can either decode the sentences 
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_test --load_from models/GPT_stage2_C2F_ep13.pt
+```
+or evaluate the Adv-Acc
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_verify --load_from models/GPT_stage2_C2F_ep13.pt --stage 2
+```
+These commands will save the decoded sentences to outputs/ folder and print out the Adv-Acc scores reported in the paper.
 
 ## Retrain Your Own Model
 ### Train Field-Infusing Transformer
@@ -62,6 +98,7 @@ CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_train --model gpt2 --s
 ```
 CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_train --model gpt2 --stage 2 --epochs 15 --batch_size 3 --load_from models/GPT_stage1_C2F_ep9.pt
 ```
+The trained models are stored under models/ folder, you can reload them and evaluate.
 
 ## Evaluation Command
 ### Compute Adv-ACC score
@@ -91,3 +128,6 @@ python parse_programs.py --parse --score_file outputs/[Your_File]
 ```
 CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/[Your_File]
 ```
+
+## Miscellaneous
+If you find any problem about the code, please leave an issue or shoot me an email.
