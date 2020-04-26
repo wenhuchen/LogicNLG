@@ -129,5 +129,13 @@ python parse_programs.py --parse --score_file outputs/[Your_File]
 CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/[Your_File]
 ```
 
+## Codalab
+We host challenge of LogicNLG in [CodaLab](https://competitions.codalab.org/competitions/24527). Please consider submit your results to the challenge site. Please remember to zip your files before submission
+```
+cd challenge
+zip -r results.zip verify_results.json test_results.json
+```
+
+
 ## Miscellaneous
 If you find any problem about the code, please leave an issue or shoot me an email.
