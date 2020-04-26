@@ -40,9 +40,11 @@ if __name__ == '__main__':
     parser.add_argument('--do_train', default=False, action="store_true", help="whether to train or test the model")
     parser.add_argument('--do_rl', default=False, action="store_true", help="whether to train or test the model")
     parser.add_argument('--do_val', default=False, action="store_true", help="whether to train or test the model")
-    parser.add_argument('--do_test', default=False, action="store_true", help="whether to train or test the model")
-    parser.add_argument('--do_ppl', default=False, action="store_true", help="whether to train or test the model")
-    parser.add_argument('--do_verify', default=False, action="store_true", help="whether to train or test the model")
+    parser.add_argument('--do_test', default=False, action="store_true", help="whether to compute the BLEU scores on test split")
+    parser.add_argument('--do_test_challenge', default=False, action="store_true", help="whether to compute the BLEU scores on challenge split")
+    parser.add_argument('--do_ppl', default=False, action="store_true", help="whether to compute perplexity of the model")
+    parser.add_argument('--do_verify', default=False, action="store_true", help="whether compute the adv-acc score on test split")
+    parser.add_argument('--do_verify_challenge', default=False, action="store_true", help="whether compute the adv-acc score on challenge split")
     parser.add_argument('--epoch', default=10, type=int, help="whether to train or test the model")
     parser.add_argument('--batch_size', default=5, type=int, help="whether to train or test the model")
     parser.add_argument('--learning_rate', default=2e-6, type=float, help="whether to train or test the model")
@@ -257,6 +259,40 @@ if __name__ == '__main__':
         with open('outputs/GPT_{}_{}.json'.format(args.model, bleu_3), 'w') as f:
             json.dump(results, f, indent=2)
 
+    if args.do_test_challenge:
+        dataset = GPTTableDatabase(None, None, 'challenge/blind_test_lm_inputs.json', tokenizer, args.batch_size, args.max_len)
+        model.load_state_dict(torch.load(args.load_from))
+        model.eval()
+
+        results = {}
+        with torch.no_grad():
+            for idx in range(0, min(args.decode_first_K, dataset.test_len())):
+                batch = dataset.get_data(idx, 'test')
+                references = dataset.get_reference(idx, 'test')
+                table_id = dataset.get_table_id(idx, 'test')
+                results[table_id] = []
+
+                batch = tuple(Variable(t).to(device) for t in batch)
+                trg_inp, trg_out, mask, caption = batch
+
+                fake_inputs = caption
+
+                samples = sample_sequence(model, 30, fake_inputs, [], top_k=1)
+
+                samples = samples[:, caption.shape[1]:]
+                samples = samples.cpu().data.numpy()
+
+                for s in samples:
+                    text = tokenizer.decode(s, clean_up_tokenization_spaces=True)
+                    text = text[: text.find(tokenizer.eos_token)]
+                    results[table_id].append(text)
+
+                sys.stdout.write("finished {}/{}; speed={}s/sent \r".format(idx, 
+                                 dataset.test_len(), (time.time() - start_time) / len(results)))
+        
+        with open('challenge/GPT_{}.json'.format(args.model), 'w') as f:
+            json.dump(results, f, indent=2)        
+
     if args.do_verify:
         dataset = GPTTableDatabase(None, None, 'data/test_lm_pos_neg.json', tokenizer, args.batch_size, args.max_len)
         model.load_state_dict(torch.load(args.load_from))
@@ -297,6 +333,56 @@ if __name__ == '__main__':
                 total += comparison.shape[0]
                 sys.stdout.write('finished {}/{} accuracy {} \r'.format(idx, dataset.test_len(), correct / total))
         print('total accuracy = {}'.format(correct / total))
+
+    if args.do_verify_challenge:
+        dataset = GPTTableDatabase(None, None, 'challenge/blind_test_lm_pos_neg.json', tokenizer, args.batch_size, args.max_len)
+        model.load_state_dict(torch.load(args.load_from))
+        model.eval()
+        correct, total = 0, 0
+        results = {}
+        with torch.no_grad():
+            for idx in range(0, dataset.test_len()):
+                batch_pos, batch_neg = dataset.get_pair_data(idx, 'test')
+
+                table_name = dataset.get_item(idx, 'test')
+                results[table_name] = []
+
+                batch = tuple(Variable(t).to(device) for t in batch_pos)
+                trg_inp, trg_out, mask, caption = batch
+
+                inputs = torch.cat([caption, trg_inp], 1)
+
+                logits = model(inputs)[0]
+                logits = logits[:, -trg_out.shape[1]:, :].contiguous()
+
+                loss = criterion(logits.view(-1, logits.shape[-1]), trg_out.view(-1))
+                loss = loss.reshape(logits.shape[0], -1)
+                loss_per_instance = (loss * mask).sum(1) / mask.sum(1)
+                pos_perpelexity_per_instance = torch.exp(loss_per_instance.cpu().data).tolist()
+
+                batch = tuple(Variable(t).to(device) for t in batch_neg)
+                trg_inp, trg_out, mask, caption = batch
+
+                inputs = torch.cat([caption, trg_inp], 1)
+
+                logits = model(inputs)[0]
+                logits = logits[:, -trg_out.shape[1]:, :].contiguous()
+
+                loss = criterion(logits.view(-1, logits.shape[-1]), trg_out.view(-1))
+                loss = loss.reshape(logits.shape[0], -1)
+                loss_per_instance = (loss * mask).sum(1) / mask.sum(1)
+                neg_perpelexity_per_instance = torch.exp(loss_per_instance.cpu().data).tolist()
+
+                for p1, p2 in zip(pos_perpelexity_per_instance, neg_perpelexity_per_instance):
+                    if p1 < p2:
+                        results[table_name].append('unknown1')
+                    else:
+                        results[table_name].append('unknown2')
+
+                sys.stdout.write('finished {}/{}\r'.format(idx, dataset.test_len()))
+        
+        with open('challenge/verify_GPT_{}.json'.format(args.model), 'w') as f:
+            json.dump(results, f, indent=2)
 
     if args.do_rl:
         def assemble_distribute(GPT_tokens, rewards, tokenizer, bert_tokenizer):

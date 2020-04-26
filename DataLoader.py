@@ -148,6 +148,11 @@ class GPTTableDatabase(Dataloader):
             seqs = []
             descs = []
             for e in entry:
+                if opt not in e and opt == 'pos':
+                    opt = 'unknown1'
+                if opt not in e and opt == 'neg':
+                    opt = 'unknown2'
+                    
                 e = e[opt]
                 seqs.append(self.tokenizer.encode(e[0]))
                 tmp = ""
@@ -281,6 +286,11 @@ class GPTTableCoarseFineDatabase(Dataloader):
             descs = []
             seq_masks = []
             for e in entry:
+                if opt not in e and opt == 'pos':
+                    opt = 'unknown1'
+                if opt not in e and opt == 'neg':
+                    opt = 'unknown2'
+
                 e = e[opt]
                 if self.stage == 1:
                     seqs.append(self.tokenizer.encode(e[3], add_special_tokens=False))
@@ -479,6 +489,11 @@ class GPTTableCoarseFineDatabase2(Dataloader):
             descs = []
             seq_masks = []
             for e in entry:
+                if opt not in e and opt == 'pos':
+                    opt = 'unknown1'
+                if opt not in e and opt == 'neg':
+                    opt = 'unknown2'
+
                 e = e[opt]
                 if self.stage == 1:
                     seqs.append(self.tokenizer.encode(e[3], add_special_tokens=False))
