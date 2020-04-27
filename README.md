@@ -120,7 +120,7 @@ CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do
 ```
 
 ### Compute SP-Acc score
-1. Parsing your output file into programs:
+1. Parsing your output file into programs (**warning**: this program uses breadth first search for potential programs, and could take a long time if you don't have many cpu cores. The experimented machine has 64 cores, and the parsing takes 30-60 minutes.):
 ```
 python parse_programs.py --parse --score_file outputs/[Your_File]
 ```
