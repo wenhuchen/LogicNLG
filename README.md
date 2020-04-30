@@ -89,6 +89,10 @@ CUDA_VISIBLE_DEVICES=0 python Transformer.py --do_train
 ```
 CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_train --model gpt2
 ```
+If you are running on a cluster of multiple nodes, you can also try our distributed training recipe:
+```
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node 4 GPT-distributed.py --do_train --model gpt2 --batch_size 4
+```
 ### Train GPT2-Coarse-to-Fine Model
 1. Warm-up the template generation model for 10 epochs
 ```
