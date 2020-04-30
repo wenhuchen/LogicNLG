@@ -345,7 +345,6 @@ class GPTTableCoarseFineDatabase(Dataloader):
         
         return pairs
 
-
 class GPTTableCoarseFineDatabase2(Dataloader):
     def __init__(self, train_name, val_name, test_name, tokenizer, batch_size=5, max_len=800, stage=1, total_stage=2):
         super(GPTTableCoarseFineDatabase2, self).__init__(None, val_name, test_name)
@@ -548,6 +547,47 @@ class GPTTableCoarseFineDatabase2(Dataloader):
         
         return pairs
 
+class GPTTableDataset2(Dataset):
+    def __init__(self, train_name, tokenizer, max_len):
+        super(GPTTableDataset2, self).__init__()
+        with open(train_name, 'r') as f:
+            self.data = json.load(f)
+        self.tokenizer = tokenizer
+        self.max_len = max_len
+        self.seq_len = 50
+
+    def __getitem__(self, index):
+        e = self.data[index]
+
+        tmp = e[-1]
+
+        tmp_idx = self.tokenizer.tokenize('Given the table title of "{}" . {} Start describing :'.format(e[2], tmp))
+        if len(tmp_idx) > self.max_len:
+            tmp_idx = tmp_idx[:self.max_len]
+        else:
+            tmp_idx = [self.tokenizer.eos_token] * (self.max_len - len(tmp_idx)) + tmp_idx
+
+        desc = self.tokenizer.convert_tokens_to_ids(tmp_idx)
+        assert len(desc) == self.max_len
+
+        seq = self.tokenizer.tokenize(e[0])
+        if len(seq) >= self.seq_len:
+            seq = seq[:self.seq_len]
+            seq_mask = [1] * self.seq_len
+        else:
+            seq_mask = [1] * (len(seq) + 1) + [0] * (self.seq_len - len(seq) - 1)
+            seq = seq + [self.tokenizer.eos_token_id] * (self.seq_len - len(seq))
+        seq = self.tokenizer.convert_tokens_to_ids(seq)
+
+        desc = torch.tensor(desc, dtype=torch.long)
+        inputs = torch.tensor(seq[:-1], dtype=torch.long)
+        outputs = torch.tensor(seq, dtype=torch.long)
+        seq_mask = torch.tensor(seq_mask, dtype=torch.long)
+
+        return inputs, outputs, seq_mask, desc
+
+    def __len__(self):
+        return len(self.data)
 
 class NormalTableDatabase(Dataloader):
     def __init__(self, train_name, val_name, test_name, batch_size=5, max_len=800):
