@@ -89,6 +89,10 @@ CUDA_VISIBLE_DEVICES=0 python Transformer.py --do_train
 ```
 CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_train --model gpt2
 ```
+If you are running on a cluster of multiple nodes, you can also try our distributed training recipe:
+```
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node 4 GPT-distributed.py --do_train --model gpt2 --batch_size 4
+```
 ### Train GPT2-Coarse-to-Fine Model
 1. Warm-up the template generation model for 10 epochs
 ```
@@ -120,7 +124,7 @@ CUDA_VISIBLE_DEVICES=0 python NLI.py --model bert-base-multilingual-uncased --do
 ```
 
 ### Compute SP-Acc score
-1. Parsing your output file into programs:
+1. Parsing your output file into programs (**warning**: this program uses breadth first search for potential programs, and could take a long time if you don't have many cpu cores. The experimented machine has 64 cores, and the parsing takes 30-60 minutes.):
 ```
 python parse_programs.py --parse --score_file outputs/[Your_File]
 ```
@@ -128,6 +132,19 @@ python parse_programs.py --parse --score_file outputs/[Your_File]
 ```
 CUDA_VISIBLE_DEVICES=0 python parse_programs.py --compute_score --load_from parser_models/model.pt --score_file program_outputs/[Your_File]
 ```
+
+## Codalab
+We host challenge of LogicNLG in [CodaLab](https://competitions.codalab.org/competitions/24527). Please consider submit your results to the challenge site. 
+```
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_verify_challenge --load_from models/GPT_stage2_C2F_ep13.pt --stage 2
+CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_test_challenge --load_from models/GPT_stage2_C2F_ep13.pt --model gpt2
+```
+These two commands will output results "verify_results.json" and "test_results.json" in the challenge folder, please remember to zip your files before submission.
+```
+cd challenge
+zip -r results.zip verify_results.json test_results.json
+```
+
 
 ## Miscellaneous
 If you find any problem about the code, please leave an issue or shoot me an email.

@@ -60,11 +60,15 @@ if __name__ == '__main__':
                         help="whether to train or test the model")
     parser.add_argument('--batch_size', default=6, type=int,
                         help="whether to train or test the model")
-    parser.add_argument('--dataset', default='table', type=str, help="whether to train or test the model")
-    parser.add_argument('--learning_rate', default=2e-6, type=float, help="whether to train or test the model")
-    parser.add_argument('--every', default=50, type=int, help="whether to train or test the model")
-    parser.add_argument('--start_epoch', default=0, type=int, help="whether to train or test the model")
-    parser.add_argument('--load_from', default='', type=str, help="whether to train or test the model")
+    parser.add_argument('--do_test_challenge', default=False, action="store_true", 
+                        help="whether to train or test the model")    
+    parser.add_argument('--learning_rate', default=2e-6, type=float, 
+                        help="whether to train or test the model")
+    parser.add_argument('--do_verify_challenge', default=False, action="store_true", 
+                        help="whether compute the adv-acc score on challenge split")    
+    parser.add_argument('--every', default=50, type=int, help="evaluate how many steps")
+    parser.add_argument('--start_epoch', default=0, type=int, help="resuming from which epoch")
+    parser.add_argument('--load_from', default='', type=str, help="load model path")
     parser.add_argument('--id', default='models', type=str, help="specify the id of the experiment")
     parser.add_argument('--max_len', default=800, type=int, help="whether to train or test the model")
     parser.add_argument('--stage', default=1, type=int, help="whether to train or test the model")
@@ -224,6 +228,53 @@ if __name__ == '__main__':
         with open('outputs/GPT_{}_C2F_{}.json'.format(args.model, bleu_3), 'w') as f:
             json.dump(results, f, indent=2)
 
+    if args.do_test_challenge:
+        assert 'stage2' in args.load_from, "The testing can only be done with stage2 model"
+        dataset = GPTTableCoarseFineDatabase2(None, None, 'challenge/blind_test_lm_inputs.json', tokenizer, args.batch_size, args.max_len, args.stage)
+        model.load_state_dict(torch.load(args.load_from))
+        model.eval()
+
+        sent_bleus_1 = []
+        sent_bleus_2 = []
+        sent_bleus_3 = []
+
+        results = {}
+        start_time = time.time()
+        with torch.no_grad():
+            for idx in range(0, min(args.decode_first_K, dataset.test_len())):
+                batch = dataset.get_data(idx, 'test')
+                references = dataset.get_reference(idx, 'test')
+                table_id = dataset.get_table_id(idx, 'test')
+                results[table_id] = []
+
+                batch = tuple(Variable(t).to(device) for t in batch)
+                trg_inp, trg_out, mask, caption = batch
+
+                fake_inputs = caption
+
+                samples = sample_sequence(model, 50, fake_inputs, [], stop_token=tokenizer.eos_token_id, 
+                                         top_k=1, trigger=tokenizer.convert_tokens_to_ids('[SEP]'), 
+                                         supress=[tokenizer.convert_tokens_to_ids('[SEP]'), 
+                                                  tokenizer.convert_tokens_to_ids('[ENT]')],
+                                         repetition=tokenizer.convert_tokens_to_ids('[ENT]'))
+
+                samples = samples[:, caption.shape[1]:]
+                samples = samples.cpu().data.numpy()
+
+                intermediate = []
+                for s in samples:
+                    text = tokenizer.decode(s, clean_up_tokenization_spaces=True)
+                    text = text[text.find('[SEP]') + 6: text.find(tokenizer.eos_token)].strip()
+                    #text = text[: text.find(tokenizer.eos_token)]
+                    intermediate.append(text)
+
+                results[table_id] = clean_str(intermediate)
+
+                sys.stdout.write("finished {}/{}; speed={}s/sent \r".format(idx, 
+                                 dataset.test_len(), (time.time() - start_time) / len(results)))
+
+        with open('challenge/test_results.json', 'w') as f:
+            json.dump(results, f, indent=2)
 
     if args.do_verify:
         assert 'stage2' in args.load_from, "The testing can only be done with stage2 model"
@@ -265,3 +316,55 @@ if __name__ == '__main__':
                 total += comparison.shape[0]
                 sys.stdout.write('finished {}/{} accuracy {} \r'.format(idx, dataset.test_len(), correct / total))
         print('total accuracy = {}'.format(correct / total))
+
+    if args.do_verify_challenge:
+        assert 'stage2' in args.load_from, "The testing can only be done with stage2 model"
+        assert args.stage == 2, "The verification can only be done with stage 2 model"
+        dataset = GPTTableCoarseFineDatabase2(None, None, 'challenge/blind_test_lm_pos_neg.json', 
+                                             tokenizer, args.batch_size, args.max_len, args.stage)
+
+        model.load_state_dict(torch.load(args.load_from))
+        model.eval()
+        correct, total = 0, 0
+        results = {}
+        with torch.no_grad():
+            for idx in range(0, dataset.test_len()):
+                batch_pos, batch_neg = dataset.get_pair_data(idx, 'test', mask_type='both')
+                
+                table_name = dataset.get_item(idx, 'test')
+                results[table_name] = []
+
+                batch = tuple(Variable(t).to(device) for t in batch_pos)
+                trg_inp, trg_out, mask, caption = batch
+
+                inputs = torch.cat([caption, trg_inp], 1)
+
+                logits = model(inputs)[0][:, -trg_out.shape[1]:, :].contiguous()
+
+                loss = criterion(logits.view(-1, logits.shape[-1]), trg_out.view(-1))
+                pos_loss = loss.reshape(logits.shape[0], -1) * mask
+                pos_loss_per_instance = pos_loss.sum(1) / mask.sum(1)
+                pos_perpelexity_per_instance = torch.exp(pos_loss_per_instance.cpu().data).tolist()
+
+                batch = tuple(Variable(t).to(device) for t in batch_neg)
+                trg_inp, trg_out, mask, caption = batch
+
+                inputs = torch.cat([caption, trg_inp], 1)
+
+                logits = model(inputs)[0][:, -trg_out.shape[1]:, :].contiguous()
+
+                loss = criterion(logits.view(-1, logits.shape[-1]), trg_out.view(-1))
+                neg_loss = loss.reshape(logits.shape[0], -1) * mask
+                neg_loss_per_instance = neg_loss.sum(1) / mask.sum(1)
+                neg_perpelexity_per_instance = torch.exp(neg_loss_per_instance.cpu().data).tolist()
+
+                for p1, p2 in zip(pos_perpelexity_per_instance, neg_perpelexity_per_instance):
+                    if p1 < p2:
+                        results[table_name].append('unknown1')
+                    else:
+                        results[table_name].append('unknown2')
+
+                sys.stdout.write('finished {}/{}\r'.format(idx, dataset.test_len()))
+        
+        with open('challenge/verify_results.json', 'w') as f:
+            json.dump(results, f, indent=2)
