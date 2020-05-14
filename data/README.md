@@ -1,4 +1,4 @@
-Here we explain the data format for LogicNLG, please note that we only select a subset of columns beforehand to decrease the irrelevant information input and alleviate the over-size problem. The method to link subset of columns is described in the (parser documentation)[https://github.com/wenhuchen/LogicNLG/blob/master/LINKING.md].
+Here we explain the data format for LogicNLG, please note that we only select a subset of columns beforehand to decrease the irrelevant information input and alleviate the over-size problem. The method to link subset of columns is described in the [parser documentation](https://github.com/wenhuchen/LogicNLG/blob/master/LINKING.md).
 
 ## The training/dev/test LM file
 The three files (train_lm, val_lm, test_lm) are used for training/testing all the models in the following format:
