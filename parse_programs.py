@@ -193,6 +193,7 @@ if __name__ == '__main__':
     parser.add_argument("--score_file", default=None, type=str, help="The input file to be scored")
     parser.add_argument("--batch_size", default=64, type=int, help="batch size for training")
     parser.add_argument("--model_type", default='bert', type=str, help="the model type")
+    parser.add_argument("--preprocess", default=False, action="store_true", help="whether to rank programs")
     parser.add_argument("--model_name_or_path", default='bert-base-uncased', type=str, help="batch size for training")    
     parser.add_argument("--num_workers", default=16, type=int, help="number of workers in the dataloader")
     parser.add_argument("--load_from", default=None, type=str, help="which model to load from")
@@ -518,3 +519,20 @@ if __name__ == '__main__':
             sys.stdout.write('accuracy = {} \r'.format(succ / total))
 
         print("accuracy = {}".format(succ / total))
+
+
+    if args.preprocess:
+        with open('data/test_lm.json') as f:
+            data = json.load(f)
+        data = dict(list(data.items())[:200])
+
+        parser = Parser(args.csv_path)
+        positive_sents = []
+        table_names = []
+        for k, vs in data.items():
+            for v in vs:
+                positive_sents.append(v[0])
+                table_names.append(k)
+
+        for _ in zip(table_names, positive_sents):
+            print(parser.preprocess(_))

@@ -1787,8 +1787,9 @@ class Parser(object):
                     mem_num[index] = ('tmp_input', v)
                     for k, content in ent2content.items():
                         if content == str(v):
-                            ent2content[k.replace("ENTITY", 'COUNT')] = v
-                            new_tokens[new_tokens.index(k)] = k.replace("ENTITY", 'COUNT') 
+                            new_k = re.sub(r'<[^0-9]+([0-9]+)>', r'<COUNT\1>', k)
+                            ent2content[new_k] = v
+                            new_tokens[new_tokens.index(k)] = new_k
                             to_delete.append(k)
                             break
         for k in to_delete:
