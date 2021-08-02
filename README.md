@@ -148,6 +148,15 @@ cd challenge
 zip -r results.zip verify_results.json test_results.json
 ```
 
+## Recent Papers
+
+
+**Model**                                     |  **Organization**  |**Reference**                                                             | **BLUEU-1** | **BLEU-2** | **BLEU-3** | **SP-Acc** |   **SP-Acc** |
+----------|---------------------------|-----------------------------------|---------------------------------------------------------------------------|---------|----------|------------------|------|
+GPT-TabGen                 | UCSB          |    [Chen et al.](https://arxiv.org/abs/2004.10404)     | 48.8            |    27.1    |   12.6  |   42.1  | 68.7  |
+GPT-Coarse-to-Fine         | UCSB          |   [Chen et al.](https://arxiv.org/abs/2004.10404)      |   46.6        |    26.8   |  13.3  |   42.7 |  72.2  |
+DCVED     | Shanghai Jiao Tong University          |  [Chen & Jin et al.](https://aclanthology.org/2021.acl-long.430.pdf)  |    49.5                 |   28.6  |  15.3  |   43.9   |  76.9 |
+
 
 ## Miscellaneous
 If you find any problem about the code, please leave an issue or shoot me an email.
