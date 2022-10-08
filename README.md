@@ -39,11 +39,11 @@ unzip parser_models.zip
 ## Reproducing Reported Results From Automatic Metric Models
 The generated output from Field-Infusing-Transformer,GPT-2-based, Coarse-to-Fine models are stored in [outputs](https://github.com/wenhuchen/LogicNLG/blob/master/outputs). Their corresponding parsing results are stored in [program_outputs](https://github.com/wenhuchen/LogicNLG/blob/master/program_outputs). 
 
-### You can verify their BLEU score by: 
+### You can verify their corpus-level BLEU score by: 
 ```
-python evaluate.py outputs/field_infusing.json data/test_lm.json
-python evaluate.py outputs/GPT_gpt2_12.65.json data/test_lm.json
-python evaluate.py outputs/GPT_gpt2_C2F_13.35.json data/test_lm.json
+python evaluate.py --input outputs/field_infusing.json --refernce data/test_lm.json --option corpus
+python evaluate.py --input outputs/GPT_gpt2_12.65.json --refernce data/test_lm.json --option corpus
+python evaluate.py --input outputs/GPT_gpt2_C2F_13.35.json --refernce data/test_lm.json --option corpus
 ```
 ### You can verify their NLI-Acc by:
 ```
@@ -105,13 +105,13 @@ CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_train --model gpt2 --s
 The trained models are stored under models/ folder, you can reload them and evaluate.
 
 ## Evaluation Command
-### Compute Adv-ACC score
+### Perform Verification
 ```
 python GPT2.py --do_verify --load_from models/[Your_Model] --model gpt2
 python GPT2-coarse-to-fine.py --do_verify --load_from models/[Your_Model] --model gpt2 --stage 2
 ```
 
-### Compute BLEU-1/2/3 score
+### Perform Generation
 ```
 CUDA_VISIBLE_DEVICES=0 python GPT2.py --do_test --load_from models/[Your_Model] --model gpt2
 CUDA_VISIBLE_DEVICES=0 python GPT2-coarse-to-fine.py --do_test --load_from models/[Your_Model] --model gpt2
